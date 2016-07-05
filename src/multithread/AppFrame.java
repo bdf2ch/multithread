@@ -5,9 +5,19 @@
  */
 package multithread;
 
+import java.awt.Component;
+import java.awt.GridLayout;
+import java.awt.List;
 import java.io.File;
+import java.util.ArrayList;
+import javax.swing.JComponent;
 import javax.swing.JFileChooser;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JTextArea;
+import javax.swing.ScrollPaneConstants;
 import static multithread.App.frame;
 
 /**
@@ -15,7 +25,9 @@ import static multithread.App.frame;
  * @author bdf2ch
  */
 public class AppFrame extends javax.swing.JFrame {
-
+    private int counter = 0;
+    //private AppThread[] threads;
+    private ArrayList<AppThread> threads = new ArrayList<AppThread>();
     /**
      * Creates new form AppFrame
      */
@@ -36,8 +48,12 @@ public class AppFrame extends javax.swing.JFrame {
         jButton1 = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
+        jButton2 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setResizable(false);
+
+        jTabbedPane1.setTabLayoutPolicy(javax.swing.JTabbedPane.SCROLL_TAB_LAYOUT);
 
         jButton1.setText("Загрузить файл");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
@@ -46,10 +62,18 @@ public class AppFrame extends javax.swing.JFrame {
             }
         });
 
-        jLabel1.setText("Всего потоков:");
+        jLabel1.setText("Дочерних потоков:");
 
         jLabel2.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
         jLabel2.setText("0");
+
+        jButton2.setText("Закрыть вкладку");
+        jButton2.setEnabled(false);
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -58,39 +82,76 @@ public class AppFrame extends javax.swing.JFrame {
             .addComponent(jTabbedPane1)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, 265, Short.MAX_VALUE)
-                .addGap(18, 18, 18)
-                .addComponent(jLabel1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel2)
-                .addGap(17, 17, 17))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, 598, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabel2)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jButton2)))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap()
+                .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 465, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jButton1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jButton1)
+                    .addComponent(jButton2)
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(jLabel1)
                         .addComponent(jLabel2)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 11, Short.MAX_VALUE)
-                .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 275, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(20, 20, 20))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         JFileChooser chooser = new JFileChooser();
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         int result = chooser.showDialog(null, "Открыть файл");
         if (result == JFileChooser.APPROVE_OPTION) {
             File file = chooser.getSelectedFile();
-             jTabbedPane1.addTab(file.getName(), new JPanel());
+            JPanel panel = new JPanel(false);
+            JTextArea filler = new JTextArea();
+            panel.add(filler);   
+            JScrollPane scroll = new JScrollPane(panel);
+            jTabbedPane1.add(scroll, file.getName());                     
+            AppThread thread = new AppThread(counter, file, filler);
+            this.threads.add(thread);
+            counter++;    
+            jLabel2.setText(Integer.toString(counter));           
+            
+            if (jTabbedPane1.getTabCount() > 0)
+                jButton2.setEnabled(true);
+            else
+                jButton2.setEnabled(false);
         }
         
     }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+        // TODO add your handling code here:
+        //int length = jTabbedPane1.getTabCount();
+        //for (int i = 0; i < length; i++) {
+        //    if (threads.get(i).thread.getName() == "thread" + i) {
+        //        threads.get(i).thread.
+        //    }
+        //}
+        int index = jTabbedPane1.getSelectedIndex();
+        jTabbedPane1.remove(index);
+        if (jTabbedPane1.getTabCount() > 0)
+                jButton2.setEnabled(true);
+            else
+                jButton2.setEnabled(false);
+        counter--;
+        jLabel2.setText(Integer.toString(counter));  
+    }//GEN-LAST:event_jButton2ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -129,6 +190,7 @@ public class AppFrame extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;
+    private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JTabbedPane jTabbedPane1;
